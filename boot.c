@@ -14,6 +14,47 @@ void boot() {
   register_handlers();
 
   /* ‚±‚±‚Å pingpong.exe ‚ğ“Ç‚İ‚ñ‚ÅÀs‚·‚é */
+  char *src;
+  char *dest;
+
+  src = (char*)0x80000;
+  dest = (char*)0x10000;
+
+  fdc_initialize();
+  fdc_running = 1;
+  fdc_read(1, 1, 9);
+  while (fdc_running)
+    halt();
+
+  fdc_read2();
+  fdc_running = 0;
+
+  int i;
+
+  for(i = 0; i < 512; i++){
+    dest[i] = src[i];
+  }
+
+
+
+  fdc_initialize();
+  fdc_running = 1;
+  fdc_read(1, 1, 10);
+  while (fdc_running)
+    halt();
+
+  fdc_read2();
+  fdc_running = 0;
+
+  for(i = 0; i < 512; i++){
+    dest[i + 512] = src[i];
+  }
+
+
+  void (*fptr)();
+
+  fptr = (void (*)())0x10000;
+  (*fptr)();
 
   while (1)
     halt();
@@ -36,6 +77,8 @@ int null_timer_handler() {
 int syscall_handler(int* regs) {
   int a = regs[0];
   int b = regs[1];
+
+  print(5, 50, 50, 15);
 
   return 0;
 }
