@@ -3,13 +3,15 @@
 #define KEY_UP_BIT    0x80
 #define SCREEN_WIDTH  320
 
-char* pptr = (char *)(0xa0000 + SCREEN_WIDTH - 10);
-
-char* bptr = (char*)(0xa0000 + SCREEN_WIDTH * 50);
 
 int i = 0;
 int k = 0;
-int l = 0;
+int l = 4;
+
+char* pptr = (char *)(0xa0000 + (SCREEN_WIDTH * 50) - 10);
+
+char* bptr = (char*)(0xa0000 + SCREEN_WIDTH * 50) + 1;
+
 
 int kbd_handler();
 int timer_handler();
@@ -46,20 +48,24 @@ int main() {
 int kbd_handler() {
   out8(0x20, 0x61);    /* キーボード割り込み (IRQ1) を再度有効にする */
   int key = in8(KBD_DATA);
-
+  int m;
   /* ラケットを消去 */
-  *pptr = 0;
-  if (pptr + SCREEN_WIDTH > ((char*)0xa0000) + SCREEN_WIDTH * 180){
-    pptr[SCREEN_WIDTH] = 0;
-    pptr[SCREEN_WIDTH * 2] = 0;
-    pptr[SCREEN_WIDTH * 3] = 0;
-    pptr[SCREEN_WIDTH * 4] = 0;
-    pptr[SCREEN_WIDTH * 5] = 0;
-    pptr[SCREEN_WIDTH * 6] = 0;
-    pptr = ((char*)0xa0000) + SCREEN_WIDTH - 10;
-  }else{
-    /* ラケットの位置を変更 */
-    pptr += SCREEN_WIDTH;
+  if(key == 0x50){
+    m = 0;
+  }else if(key == 0x48){
+    m = 1;
+  }
+
+  pptr[SCREEN_WIDTH * m * 6] = 0;
+  if((pptr + SCREEN_WIDTH > ((char*)0xa0000) + SCREEN_WIDTH * 180) && (m == 0)){
+  }else if((pptr - SCREEN_WIDTH < ((char*)0xa0000)) && (m == 1)){
+    }else{
+      /* ラケットの位置を変更 */
+      if(m == 0){
+        pptr += SCREEN_WIDTH;
+      }else if(m == 1){
+        pptr -= SCREEN_WIDTH;
+      }
   }
 
   /* ラケットを描画 */
@@ -74,6 +80,7 @@ int kbd_handler() {
 
 int timer_handler() {
   out8(0x20, 0x60);    /* タイマー割り込み (IRQ0) を再度有効にする */
+  int n;
 
   /* ボールを消去 */
   if(k == 0){
@@ -82,9 +89,10 @@ int timer_handler() {
     k = 0;
   }
 
-  for(int j = 0; j < 188; j++){
-    if(bptr == 0xa0000 + (SCREEN_WIDTH * j) && i == 1){
+  for(int j = 0; j < 188; j++){ //ヒット確認
+    if(bptr == ((char*)0xa0000) + (SCREEN_WIDTH * j) && i == 1){
       i = 0;
+      l = 8 - l;
     }
   }
 
@@ -95,6 +103,16 @@ int timer_handler() {
     bptr--;
   }
 
+  // if(l == 4){
+  //   bptr -= SCREEN_WIDTH;
+  // }
+
+  // if(bptr < ((char*)0xa0000) + SCREEN_WIDTH){
+  //   l = 5;
+  // }else if(bptr > ((char*)0xa0000) + (SCREEN_WIDTH * 186)){
+  //   l = 3;
+  // }
+
   /* ボールを描画 */
   *bptr = 15;
 
@@ -102,6 +120,7 @@ int timer_handler() {
     if(pptr + (SCREEN_WIDTH * j) == bptr){
       i = 1;
       k = 1;
+      l = j;
     }
   }
 }
