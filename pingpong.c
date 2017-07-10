@@ -5,9 +5,11 @@
 
 char* pptr = (char *)(0xa0000 + SCREEN_WIDTH - 10);
 
-char* bptr = (char*)(0xa0000 + SCREEN_WIDTH * 80);
+char* bptr = (char*)(0xa0000 + SCREEN_WIDTH * 50);
 
-int i;
+int i = 0;
+int k = 0;
+int l = 0;
 
 int kbd_handler();
 int timer_handler();
@@ -47,7 +49,7 @@ int kbd_handler() {
 
   /* ラケットを消去 */
   *pptr = 0;
-  if (pptr + SCREEN_WIDTH > ((char*)0xa0000) + SCREEN_WIDTH * 150){
+  if (pptr + SCREEN_WIDTH > ((char*)0xa0000) + SCREEN_WIDTH * 180){
     pptr[SCREEN_WIDTH] = 0;
     pptr[SCREEN_WIDTH * 2] = 0;
     pptr[SCREEN_WIDTH * 3] = 0;
@@ -74,30 +76,34 @@ int timer_handler() {
   out8(0x20, 0x60);    /* タイマー割り込み (IRQ0) を再度有効にする */
 
   /* ボールを消去 */
-  *bptr = 0;
+  if(k == 0){
+    *bptr = 0;
+  }else{
+    k = 0;
+  }
+
+  for(int j = 0; j < 188; j++){
+    if(bptr == 0xa0000 + (SCREEN_WIDTH * j) && i == 1){
+      i = 0;
+    }
+  }
 
   /* ボールの位置を変更 */
   if(i == 0){
     bptr++;
-  }
-  if(i == 1){
+  }else{
     bptr--;
   }
+
+  /* ボールを描画 */
+  *bptr = 15;
 
   for(int j = 0; j < 7; j++){
     if(pptr + (SCREEN_WIDTH * j) == bptr){
       i = 1;
+      k = 1;
     }
   }
-  // if(pptr == bptr){
-  //   i = 1;
-  // }
-  // if(pptr + SCREEN_WIDTH == bptr){
-  //   i = 1;
-  // }
-
-  /* ボールを描画 */
-  *bptr = 15;
 }
 
 /* ソフトウェア割り込み 0x30 を発生させる */
