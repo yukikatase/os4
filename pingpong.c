@@ -92,7 +92,6 @@ int timer_handler() {
   for(int j = 0; j < 188; j++){ //ヒット確認
     if(bptr == ((char*)0xa0000) + (SCREEN_WIDTH * j) && i == 1){
       i = 0;
-      l = 8 - l;
     }
   }
 
@@ -103,15 +102,17 @@ int timer_handler() {
     bptr--;
   }
 
-  // if(l == 4){
-  //   bptr -= SCREEN_WIDTH;
-  // }
+  if(l < 4){
+    bptr -= SCREEN_WIDTH;
+  }else if(l > 4){
+    bptr += SCREEN_WIDTH;
+  }
 
-  // if(bptr < ((char*)0xa0000) + SCREEN_WIDTH){
-  //   l = 5;
-  // }else if(bptr > ((char*)0xa0000) + (SCREEN_WIDTH * 186)){
-  //   l = 3;
-  // }
+  if(bptr < ((char*)0xa0000) + SCREEN_WIDTH){
+    l = 5;
+  }else if(bptr > ((char*)0xa0000) + (SCREEN_WIDTH * 186)){
+    l = 3;
+  }
 
   /* ボールを描画 */
   *bptr = 15;

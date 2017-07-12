@@ -50,6 +50,19 @@ void boot() {
     dest[i + 512] = src[i];
   }
 
+    fdc_initialize();
+  fdc_running = 1;
+  fdc_read(1, 1, 11);
+  while (fdc_running)
+    halt();
+
+  fdc_read2();
+  fdc_running = 0;
+
+  for(i = 0; i < 512; i++){
+    dest[i + 1024] = src[i];
+  }
+
 
   void (*fptr)();
 
