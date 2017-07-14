@@ -7,6 +7,7 @@
 int i = 0;
 int k = 0;
 int l = 4;
+int width = 20;//ラケットの幅  
 
 char* pptr = (char *)(0xa0000 + (SCREEN_WIDTH * 50) - 10);
 
@@ -30,13 +31,9 @@ int main() {
   *(ptr + 1) = (int)timer_handler;
 
   *bptr = 14;
-  *pptr = 15;
-  pptr[SCREEN_WIDTH] = 15;
-  pptr[SCREEN_WIDTH * 2] = 15;
-  pptr[SCREEN_WIDTH * 3] = 15;
-  pptr[SCREEN_WIDTH * 4] = 15;
-  pptr[SCREEN_WIDTH * 5] = 15;
-  pptr[SCREEN_WIDTH * 6] = 15;
+  for(int i = 0; i < width; i++){
+    pptr[SCREEN_WIDTH * i] = 15;
+  }
 
   /* 現状では何もおこらないが、取りあえずソフトウェア割り込みをかけてみる */
   // syscall(1, 0);
@@ -56,9 +53,9 @@ int kbd_handler() {
     m = 1;
   }
 
-  pptr[SCREEN_WIDTH * m * 6] = 0;
-  if((pptr + SCREEN_WIDTH > ((char*)0xa0000) + SCREEN_WIDTH * 180) && (m == 0)){
-  }else if((pptr - SCREEN_WIDTH < ((char*)0xa0000)) && (m == 1)){
+  pptr[SCREEN_WIDTH * m * width] = 0;
+  if((pptr + SCREEN_WIDTH > ((char*)0xa0000) + SCREEN_WIDTH * 170) && (m == 0)){//下に行きすぎるとダメ
+  }else if((pptr - SCREEN_WIDTH < ((char*)0xa0000)) && (m == 1)){//上に行き過ぎてもダメ
     }else{
       /* ラケットの位置を変更 */
       if(m == 0){
@@ -69,13 +66,9 @@ int kbd_handler() {
   }
 
   /* ラケットを描画 */
-  pptr[0] = 15;
-  pptr[SCREEN_WIDTH] = 15;
-  pptr[SCREEN_WIDTH * 2] = 15;
-  pptr[SCREEN_WIDTH * 3] = 15;
-  pptr[SCREEN_WIDTH * 4] = 15;
-  pptr[SCREEN_WIDTH * 5] = 15;
-  pptr[SCREEN_WIDTH * 6] = 15;
+  for(int i = 0; i < width; i++){
+    pptr[SCREEN_WIDTH * i] = 15;
+  }
 }
 
 int timer_handler() {
@@ -102,22 +95,22 @@ int timer_handler() {
     bptr--;
   }
 
-  if(l < 4){
+  if(l < width / 2 + 1){
     bptr -= SCREEN_WIDTH;
-  }else if(l > 4){
+  }else if(l > width / 2 + 1){
     bptr += SCREEN_WIDTH;
   }
 
   if(bptr < ((char*)0xa0000) + SCREEN_WIDTH){
-    l = 5;
+    l = width / 2 + 2;
   }else if(bptr > ((char*)0xa0000) + (SCREEN_WIDTH * 186)){
-    l = 3;
+    l = width / 2;
   }
 
   /* ボールを描画 */
   *bptr = 15;
 
-  for(int j = 0; j < 7; j++){
+  for(int j = 0; j < width; j++){
     if(pptr + (SCREEN_WIDTH * j) == bptr){
       i = 1;
       k = 1;
